@@ -1,0 +1,33 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Yii console bootstrap file.
+ *
+ * @link http://www.yiiframework.com/
+ * @copyright Copyright (c) 2008 Yii Software LLC
+ * @license http://www.yiiframework.com/license/
+ */
+ 
+require(__DIR__ . '/config/function.php');
+
+$config_dev = __DIR__ . '/config/console_dev.php';
+$config_prod = __DIR__ . '/config/console_prod.php';
+error_reporting(E_ALL  ^  E_NOTICE);
+if (file_exists($config_dev)) {
+    defined('YII_DEBUG') or define('YII_DEBUG', true);
+    defined('YII_ENV') or define('YII_ENV', 'dev');
+    $config_file = $config_dev;
+} else {
+    $config_file = $config_prod;
+}
+$config = require($config_file);
+
+require(__DIR__ . '/vendor/autoload.php');
+require(__DIR__ . '/vendor/yiisoft/yii2/Yii.php');
+
+$class_map_arr = require(__DIR__ . '/config/class_map.php');
+Yii::$classMap = array_merge(Yii::$classMap, $class_map_arr);
+
+$application = new yii\console\Application($config);
+$exitCode = $application->run();
+exit($exitCode);
