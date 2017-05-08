@@ -78,6 +78,7 @@ ul.assets {
 td, th {
     white-space: pre-wrap;
     word-wrap: break-word;
+    padding: 5;
 }
 
 .request-table td {
