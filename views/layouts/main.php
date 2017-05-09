@@ -40,7 +40,7 @@ AppAsset::register($this);
         ];
     } else {
 
-        $menu[] = ['label' => '玩家', 'url' => ['/gamer/index']];
+        $menu[] = ['label' => '英雄管理', 'url' => ['/setting/hero-list']];
         $menu[] = '<li>'
                 . Html::beginForm(['/site/logout'], 'post', ['class' => 'navbar-form'])
                 . Html::submitButton(

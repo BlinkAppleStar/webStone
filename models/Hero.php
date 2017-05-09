@@ -35,6 +35,9 @@ class Hero extends MongoModel
     const CAREER_SHAMAN     = 'shaman';
     const CAREER_WARRIOR    = 'warrior';
 
+    /*
+        获取职业列表
+    */
     public function getCareerList()
     {
         return [
@@ -49,4 +52,32 @@ class Hero extends MongoModel
             self::CAREER_WARRIOR    => '战士',
         ];
     }
+
+    /*
+        删除英雄
+    */
+    public function remove($id)
+    {
+        $deck_model = new Deck();
+        $deck_using = $deck_model->findByAttributes(['hero_id' => $id]);
+
+        $card_model = new Card();
+        $card_using = $card_model->findByAttributes(['hero_id' => $id]);
+
+        if ($deck_using) {
+            $ret_msg = ['ok' => false, 'msg' => '有牌库正在使用该英雄，请先删除牌库', 'data' => $deck_using['_id']->__toString()];
+        } elseif ($card_using) {
+            $ret_msg = ['ok' => false, 'msg' => '有卡牌属于该英雄，请先删除卡牌或重定向', 'data' => $card_using['_id']->__toString()];
+        } else {
+            $res = $this->deleteByPk($id);
+            if ($res) {
+                $ret_msg = ['ok' => true, 'msg' => '删除成功'];
+            } else {
+                $ret_msg = ['ok' => false, 'msg' => '删除失败'];
+            }
+        }
+
+        return $ret_msg;
+    }
+
 }

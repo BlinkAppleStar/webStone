@@ -16,9 +16,9 @@ $this->params['breadcrumbs'][] = $this->title;
         <form action="" method="post">
         <div class="block tcenter">
             <div>
-                <table style="padding: 5" border="1">
+                <table style="padding: 5; width: 400px;" border="1">
                     <tr>
-                        <td>
+                        <td width="100">
                             ID:
                         </td>
                         <td>
@@ -40,7 +40,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         <td>
                             <select name="career">
                                 <?php foreach ($career_list as $key => $val) { ?>
-                                <option value="<?php echo $key ?>" /><?php echo $val ?>
+                                <option value="<?php echo $key ?>" <?php echo $key == $model->attributes['career'] ? 'selected' : '' ?> /><?php echo $val ?>
                                 <?php } ?>
                             </select>
                         </td>
@@ -50,7 +50,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             英雄头像: 
                         </td>
                         <td>
-                            <input type="text" name="avatar" value="<?php echo $model->attributes['avatar'] ?>" />
+                            <input type="text" name="avatar" value="<?php echo $model->attributes['avatar'] ?>" size="50" />
                             <?php if ($model->attributes['avatar']) { ?>
                             <img src="<?php echo $model->attributes['avatar'] ?>" />
                             <?php } ?>
@@ -61,7 +61,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             英雄图标: 
                         </td>
                         <td>
-                            <input type="text" name="logo" value="<?php echo $model->attributes['logo'] ?>" />
+                            <input type="text" name="logo" value="<?php echo $model->attributes['logo'] ?>" size="50" />
                             <?php if ($model->attributes['logo']) { ?>
                             <img src="<?php echo $model->attributes['logo'] ?>" />
                             <?php } ?>

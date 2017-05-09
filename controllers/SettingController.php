@@ -88,19 +88,17 @@ class SettingController extends BaseController
     */
     public function actionHeroList()
     {
-        $model = new Card();
+        $model = new Hero();
         $list = $model->findAllByAttributes();
-        
-        foreach ($list as &$manager) {
-            $manager['created_time'] = date('Y-m-d H:i:s', $manager['created_time']);
-            $manager['last_login'] = date('Y-m-d H:i:s', $manager['last_login']);
-        }
+
+        $career_list = $model->getCareerList();
 
         if (Yii::$app->request->isAjax || Yii::$app->request->get('ajax')) {
-            return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $list]);
+            return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => ['list' => $list, 'career_list' => $career_list]]);
         } else {
-            return $this->render('index', [
+            return $this->render('hero_list', [
                 'list'          => $list,
+                'career_list'   => $career_list,
             ]);
         }
     }
@@ -149,6 +147,15 @@ class SettingController extends BaseController
                 'msg'               => $ret_msg['msg'],
             ]);
         }
+    }
+
+    /*
+        英雄删除
+    */
+    public function actionHeroDelete()
+    {
+        $model = new Hero();
+        return Json::encode($model->remove(Yii::$app->request->get('id', '')));
     }
 
 }
