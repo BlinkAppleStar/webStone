@@ -17,19 +17,34 @@ class SettingController extends BaseController
     */
     public function actionCardList()
     {
+        $page       = Yii::$app->request->get('page');
+        $page_size  = Yii::$app->request->get('page_size');
+        $page_size  = $page_size > 0 ? $page_size : 10;
+        $skip       = $page > 0 ? ($page - 1) * $page_size : 0;
+
         $model = new Card();
-        $list = $model->findAllByAttributes();
-        
-        foreach ($list as &$manager) {
-            $manager['created_time'] = date('Y-m-d H:i:s', $manager['created_time']);
-            $manager['last_login'] = date('Y-m-d H:i:s', $manager['last_login']);
-        }
 
         if (Yii::$app->request->isAjax || Yii::$app->request->get('ajax')) {
-            return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $list]);
+            $data = $model->search([
+                '_id'           => Yii::$app->request->get('mongo_id'),
+                'type'          => Yii::$app->request->get('type'),
+                'name_like'     => Yii::$app->request->get('name_like'),
+                'mana'          => Yii::$app->request->get('mana'),
+                'career'        => Yii::$app->request->get('career'),
+                'level'         => Yii::$app->request->get('level'),
+            ], $skip, $page_size);
+
+            return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $data]);
         } else {
-            return $this->render('index', [
-                'list'          => $list,
+            $type_list = $model->getTypeList();
+
+            $hero_model = new Hero();
+            $career_list = $hero_model->getCareerList();
+
+            return $this->render('card_list', [
+                'data'          => $data,
+                'type_list'     => $type_list,
+                'career_list'   => $career_list,
             ]);
         }
     }
@@ -59,9 +74,10 @@ class SettingController extends BaseController
                 'hp'            => Yii::$app->request->post('hp', ''),
                 'skill_desc'    => Yii::$app->request->post('skill_desc', ''),
                 'skill_id'      => Yii::$app->request->post('skill_id', ''),
-                'hero_id'       => Yii::$app->request->post('hero_id', ''),
+                'career'        => Yii::$app->request->post('career', ''),
                 'level'         => Yii::$app->request->post('level', ''),
-                'created_time'  => time(),
+                'image'         => Yii::$app->request->post('image', ''),
+                'updated_time'  => time(),
             ];
 
             $res = $model->save();
@@ -75,12 +91,46 @@ class SettingController extends BaseController
         if (Yii::$app->request->isAjax || Yii::$app->request->post('ajax')) {
             return Json::encode($ret_msg);
         } else {
-            return $this->render('edit', [
+            $type_list = $model->getTypeList();
+
+            $hero_model = new Hero();
+            $career_list = $hero_model->getCareerList();
+
+            return $this->render('card_edit', [
                 'model'             => $model,
+                'type_list'         => $type_list,
+                'career_list'       => $career_list,
                 'action'            => $action,
                 'msg'               => $ret_msg['msg'],
             ]);
         }
+    }
+
+    /*
+        卡牌删除
+    */
+    public function actionCardDelete()
+    {
+        $model = new Card();
+        return Json::encode($model->remove(Yii::$app->request->get('id', '')));
+    }
+
+    /*
+        获取卡牌类型列表
+    */
+    public function actionCardTypeList()
+    {
+        $model = new Card();
+        return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $model->getTypeList()]);
+    }
+
+    /*
+        获取卡牌级别列表
+    */
+    public function actionCardLevelList()
+    {
+        $model = new Card();
+        return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $model->getLevelList()]);
     }
 
     /*
@@ -156,6 +206,15 @@ class SettingController extends BaseController
     {
         $model = new Hero();
         return Json::encode($model->remove(Yii::$app->request->get('id', '')));
+    }
+
+    /*
+        获取英雄职业列表
+    */
+    public function actionHeroCareerList()
+    {
+        $model = new Hero();
+        return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $model->getCareerList()]);
     }
 
 }

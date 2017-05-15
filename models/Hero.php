@@ -15,7 +15,7 @@ use yii\base\Model;
     {
             "_id" : ObjectId("585a47bc7f8b9a43058b4567"),
             "name" : "安度因", 
-            "career" :"priest", // 牧师 priest, 法师 mage, 术士 warlock, 德鲁伊 druid, 猎人 hunter, 圣骑士 paladin, 盗贼 rogue, 萨满 shaman, 战士 warrior
+            "career" :"priest", // 牧师 priest, 法师 mage, 术士 warlock, 德鲁伊 druid, 猎人 hunter, 圣骑士 paladin, 盗贼 rogue, 萨满 shaman, 战士 warrior, 中立 Neutral
             "avatar" : "xxxxx", // 头像地址
             "logo" : "xxxx",
     }
@@ -34,6 +34,7 @@ class Hero extends MongoModel
     const CAREER_ROGUE      = 'rogue';
     const CAREER_SHAMAN     = 'shaman';
     const CAREER_WARRIOR    = 'warrior';
+    const CAREER_NEUTRAL    = 'neutral';
 
     /*
         获取职业列表
@@ -50,6 +51,7 @@ class Hero extends MongoModel
             self::CAREER_ROGUE      => '盗贼',
             self::CAREER_SHAMAN     => '萨满',
             self::CAREER_WARRIOR    => '战士',
+            self::CAREER_NEUTRAL    => '中立',
         ];
     }
 
