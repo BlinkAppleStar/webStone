@@ -56,7 +56,7 @@ class Card extends MongoModel
     public function remove($id)
     {
         $deck_model = new Deck();
-        $deck_using = $deck_model->findByAttributes(['cards' => ['$all' => $id]]);
+        $deck_using = $deck_model->findByAttributes(['cards' => ['$all' => [$id]]]);
 
         if ($deck_using) {
             $ret_msg = ['ok' => false, 'msg' => '有牌库正在使用该卡牌，请先删除牌库', 'data' => $deck_using['_id']->__toString()];
@@ -90,6 +90,12 @@ class Card extends MongoModel
         }
         if (strval($params['mana']) != '') {
             $query['mana'] = $params['mana'];
+        }
+        if (strval($params['mana_min']) != '') {
+            $query['mana'] = ['$gte' => $params['mana_min']];
+        }
+        if (strval($params['mana_max']) != '') {
+            $query['mana'] = ['$lte' => $params['mana_max']];
         }
         if (strval($params['damage']) != '') {
             $query['damage'] = $params['damage'];

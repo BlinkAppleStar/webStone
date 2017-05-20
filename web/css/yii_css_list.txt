@@ -1,0 +1,24 @@
+btn-default 白色
+
+btn-primary 深蓝
+
+btn-success 绿色
+
+btn-info 浅蓝
+
+btn-warning 金黄
+
+btn-danger  深红
+
+btn-link
+
+btn-lg
+btn-group-lg
+
+btn-sm
+btn-group-sm
+
+btn-xs
+btn-group-xs
+
+btn-block

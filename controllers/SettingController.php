@@ -30,6 +30,7 @@ class SettingController extends BaseController
                 'type'          => Yii::$app->request->get('type'),
                 'name_like'     => Yii::$app->request->get('name_like'),
                 'mana'          => Yii::$app->request->get('mana'),
+                'mana_min'      => Yii::$app->request->get('mana_min'),
                 'career'        => Yii::$app->request->get('career'),
                 'level'         => Yii::$app->request->get('level'),
             ], $skip, $page_size);
@@ -42,7 +43,6 @@ class SettingController extends BaseController
             $career_list = $hero_model->getCareerList();
 
             return $this->render('card_list', [
-                'data'          => $data,
                 'type_list'     => $type_list,
                 'career_list'   => $career_list,
             ]);

@@ -42,6 +42,7 @@ AppAsset::register($this);
 
         $menu[] = ['label' => '英雄管理', 'url' => ['/setting/hero-list']];
         $menu[] = ['label' => '卡牌管理', 'url' => ['/setting/card-list']];
+        $menu[] = ['label' => '牌库管理', 'url' => ['/deck/list']];
         $menu[] = '<li>'
                 . Html::beginForm(['/site/logout'], 'post', ['class' => 'navbar-form'])
                 . Html::submitButton(

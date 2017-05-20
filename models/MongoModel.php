@@ -190,4 +190,12 @@ class MongoModel extends Model
     {
         return $this->col->update($query, $value, $options);
     }
+
+    /*
+        @param $query = array()
+    */
+    public function countByAttributes($query, $options = [])
+    {
+        return $this->col->count($query, $options);
+    }
 }

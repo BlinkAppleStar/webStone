@@ -61,7 +61,7 @@ $this->registerJsFile('@web/js/site.js');
         <div class="form-group">
             <label class="col-lg-1 control-label"> </label>
             <div class="col-lg-3">
-                <a href="javascript:;" onclick="ajax_list(1, 3)" class="btn-primary btn ">搜 索</a>
+                <a href="javascript:;" onclick="ajax_list(1, 10)" class="btn-primary btn ">搜 索</a>
             </div>
         </div>
     </div>
@@ -182,7 +182,7 @@ function ajax_list(page, page_size)
                 html += '<td>'+ret.data.list[key]['damage']+'</td>';
                 html += '<td>'+ret.data.list[key]['hp']+'</td>';
                 html += '<td>'+card_level_list[ret.data.list[key]['level']]+'</td>';
-                html += '<td>'+'<a href="/setting/card-edit?mongo_id='+key+'" target="_blank" class="btn-default btn ">编辑</a>|<a href="javascript:;" onclick="card_delete('+key+')" class="btn-default btn ">删除</a>'+'</td>';
+                html += '<td>'+'<a href="/setting/card-edit?mongo_id='+key+'" target="_blank" class="btn-default btn ">编辑</a>|<a href="javascript:;" onclick="card_delete('+"'"+key+"'"+')" class="btn-default btn ">删除</a>'+'</td>';
                 html += '</tr>';
             }
 
