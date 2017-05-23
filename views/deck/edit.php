@@ -199,13 +199,21 @@ function ajax_detail()
         },
         function(ret){
             if (ret.ok) {
-                html = '<tr><td>'+'<input type="text" name="deck_name" id="deck_name" value="' + ret.data.name + '" />'+'</td></tr>';
-
+                console.log(ret.data.cards);
+                html = '<tr><td colspan="11">'+'<input type="text" name="deck_name" id="deck_name" value="' + ret.data.name + '" onkeydown="check_deck_name(event)" />'+'</td><td>'+ ret.data.card_cnt +' / 30</td></tr>';
+                td_cnt = 0;
                 for (key in ret.data.cards) {
-                    html += '<tr>';
+                    if (td_cnt == 0) {
+                        html += '<tr>';
+                    }
+
                     html += '<td><img src="' + ret.data.cards[key].image + '" width="50" height="60" onclick="ajax_remove_card('+"'" + key + "'" +')" /></td>';
                     html += '<td>x '+ret.data.cards[key].cnt+'</td>';
-                    html += '</tr>';
+                    td_cnt++;
+                    if (td_cnt == 6) {
+                        html += '</tr>';
+                        td_cnt = 0;
+                    }
                 }
                 $('#deck_card_list').html(html);
             } else {
@@ -257,5 +265,42 @@ function ajax_remove_card(card_id)
         'json'
     );
 }
+
+/*
+    编辑牌库名字
+*/
+function check_deck_name(e)
+{
+    var curKey = e.which;
+    if (curKey == 13) {
+        $.get("/deck/edit-name",
+            {
+                deck_id:$('#deck_id').val(),
+                name:$('#deck_name').val()
+            },
+            function(ret){
+                if (ret.ok) {
+                    ajax_detail();
+                    alert(ret.msg);
+                } else {
+                    alert(ret.msg);
+                }
+            },
+            'json'
+        );
+    }
+}
+
+
+// 假设服务端ip为127.0.0.1
+ws = new WebSocket("ws://127.0.0.1:2346");
+ws.onopen = function() {
+    alert("连接成功");
+    ws.send('tom');
+    alert("给服务端发送一个字符串：tom");
+};
+ws.onmessage = function(e) {
+    alert("收到服务端的消息：" + e.data);
+};
 
 </script>

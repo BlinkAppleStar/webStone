@@ -25,7 +25,7 @@ use yii\base\Model;
     }
 
 */
-class Attendant extends MongoModel
+class MgAttendant extends MongoModel
 {
     public $tableName = 'attendant';
 

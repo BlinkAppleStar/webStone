@@ -21,7 +21,7 @@ use yii\base\Model;
     }
 
 */
-class Hero extends MongoModel
+class MgHero extends MongoModel
 {
     public $tableName = 'hero';
 
@@ -60,10 +60,10 @@ class Hero extends MongoModel
     */
     public function remove($id)
     {
-        $deck_model = new Deck();
+        $deck_model = new MgDeck();
         $deck_using = $deck_model->findByAttributes(['hero_id' => $id]);
 
-        $card_model = new Card();
+        $card_model = new MgCard();
         $card_using = $card_model->findByAttributes(['hero_id' => $id]);
 
         if ($deck_using) {

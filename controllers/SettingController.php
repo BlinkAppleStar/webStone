@@ -7,8 +7,8 @@ use yii\web\Controller;
 use yii\helpers\Json;
 use yii\helpers\Url;
 use app\models\MgManager;
-use app\models\Card;
-use app\models\Hero;
+use app\models\MgCard;
+use app\models\MgHero;
 
 class SettingController extends BaseController
 {
@@ -22,7 +22,7 @@ class SettingController extends BaseController
         $page_size  = $page_size > 0 ? $page_size : 10;
         $skip       = $page > 0 ? ($page - 1) * $page_size : 0;
 
-        $model = new Card();
+        $model = new MgCard();
 
         if (Yii::$app->request->isAjax || Yii::$app->request->get('ajax')) {
             $data = $model->search([
@@ -39,7 +39,7 @@ class SettingController extends BaseController
         } else {
             $type_list = $model->getTypeList();
 
-            $hero_model = new Hero();
+            $hero_model = new MgHero();
             $career_list = $hero_model->getCareerList();
 
             return $this->render('card_list', [
@@ -56,7 +56,7 @@ class SettingController extends BaseController
     {
         $mongo_id = Yii::$app->request->post('mongo_id') ? Yii::$app->request->post('mongo_id') : Yii::$app->request->get('mongo_id');
 
-        $model = new Card();
+        $model = new MgCard();
         $res = $model->findByPk($mongo_id);
         if ($res) {
             $action = 'Edit';
@@ -93,7 +93,7 @@ class SettingController extends BaseController
         } else {
             $type_list = $model->getTypeList();
 
-            $hero_model = new Hero();
+            $hero_model = new MgHero();
             $career_list = $hero_model->getCareerList();
 
             return $this->render('card_edit', [
@@ -111,7 +111,7 @@ class SettingController extends BaseController
     */
     public function actionCardDelete()
     {
-        $model = new Card();
+        $model = new MgCard();
         return Json::encode($model->remove(Yii::$app->request->get('id', '')));
     }
 
@@ -120,7 +120,7 @@ class SettingController extends BaseController
     */
     public function actionCardTypeList()
     {
-        $model = new Card();
+        $model = new MgCard();
         return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $model->getTypeList()]);
     }
 
@@ -129,7 +129,7 @@ class SettingController extends BaseController
     */
     public function actionCardLevelList()
     {
-        $model = new Card();
+        $model = new MgCard();
         return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $model->getLevelList()]);
     }
 
@@ -138,7 +138,7 @@ class SettingController extends BaseController
     */
     public function actionHeroList()
     {
-        $model = new Hero();
+        $model = new MgHero();
         $list = $model->findAllByAttributes();
 
         $career_list = $model->getCareerList();
@@ -160,7 +160,7 @@ class SettingController extends BaseController
     {
         $mongo_id = Yii::$app->request->post('mongo_id') ? Yii::$app->request->post('mongo_id') : Yii::$app->request->get('mongo_id');
 
-        $model = new Hero();
+        $model = new MgHero();
         $res = $model->findByPk($mongo_id);
         if ($res) {
             $action = 'Edit';
@@ -204,7 +204,7 @@ class SettingController extends BaseController
     */
     public function actionHeroDelete()
     {
-        $model = new Hero();
+        $model = new MgHero();
         return Json::encode($model->remove(Yii::$app->request->get('id', '')));
     }
 
@@ -213,7 +213,7 @@ class SettingController extends BaseController
     */
     public function actionHeroCareerList()
     {
-        $model = new Hero();
+        $model = new MgHero();
         return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $model->getCareerList()]);
     }
 

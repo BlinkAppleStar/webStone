@@ -7,9 +7,9 @@ use yii\web\Controller;
 use yii\helpers\Json;
 use yii\helpers\Url;
 use app\models\MgManager;
-use app\models\Card;
-use app\models\Hero;
-use app\models\Deck;
+use app\models\MgCard;
+use app\models\MgHero;
+use app\models\MgDeck;
 
 class DeckController extends BaseController
 {
@@ -23,7 +23,7 @@ class DeckController extends BaseController
         $page_size  = $page_size > 0 ? $page_size : 10;
         $skip       = $page > 0 ? ($page - 1) * $page_size : 0;
 
-        $model = new Deck();
+        $model = new MgDeck();
 
         if (Yii::$app->request->isAjax || Yii::$app->request->get('ajax')) {
             $data = $model->search([
@@ -45,11 +45,11 @@ class DeckController extends BaseController
     public function actionCreate()
     {
         if (Yii::$app->request->isAjax || Yii::$app->request->get('ajax')) {
-            $model = new Deck();
+            $model = new MgDeck();
             $ret_msg = $model->create(Yii::$app->request->get('hero_id', ''));
             return Json::encode($ret_msg);
         } else {
-            $hero_model = new Hero();
+            $hero_model = new MgHero();
             $hero_list = $hero_model->findAllByAttributes();
             $career_list = $hero_model->getCareerList();
 
@@ -66,13 +66,13 @@ class DeckController extends BaseController
     public function actionEditIndex()
     {
         $id = Yii::$app->request->get('mongo_id', '');
-        $model = new Deck();
+        $model = new MgDeck();
         $res = $model->findByPk($id);
         if (!$res) {
             $this->redirect('/deck/list');
         }
 
-        $card_model = new Card();
+        $card_model = new MgCard();
         $card_type_list = $card_model->getTypeList();
         $card_level_list = $card_model->getLevelList();
 
@@ -88,7 +88,7 @@ class DeckController extends BaseController
     */
     public function actionAddCard()
     {
-        $model = new Deck();
+        $model = new MgDeck();
         return Json::encode($model->addCard(Yii::$app->request->get('deck_id', ''), Yii::$app->request->get('card_id', '')));
     }
 
@@ -97,7 +97,7 @@ class DeckController extends BaseController
     */
     public function actionRemoveCard()
     {
-        $model = new Deck();
+        $model = new MgDeck();
         return Json::encode($model->removeCard(Yii::$app->request->get('deck_id', ''), Yii::$app->request->get('card_id', '')));
     }
 
@@ -106,7 +106,7 @@ class DeckController extends BaseController
     */
     public function actionDelete()
     {
-        $model = new Deck();
+        $model = new MgDeck();
         $res = $model->deleteByPk(Yii::$app->request->get('id', ''));
         if ($res) {
             $ret_msg = ['ok' => true, 'msg' => '删除成功'];
@@ -123,16 +123,40 @@ class DeckController extends BaseController
     public function actionDetail()
     {
         $id = Yii::$app->request->get('id', '');
-        $model = new Deck();
+        $model = new MgDeck();
         $res = $model->findByPk($id);
         if ($res) {
             if ($model->attributes['manager_id'] != Yii::$app->user->id) {
                 $ret_msg = ['ok' => false, 'msg' => '不能查看别人的牌库'];
             } else {
+                $model->attributes['card_cnt'] = count($model->attributes['cards']);
                 $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $model->attributes];
             }
         } else {
             $ret_msg = ['ok' => false, 'msg' => '获取失败'];
+        }
+
+        return Json::encode($ret_msg);
+    }
+
+    /*
+        ajax修改牌库名字
+    */
+    public function actionEditName()
+    {
+        $id = Yii::$app->request->get('deck_id', '');
+        $model = new MgDeck();
+        $res = $model->findByPk($id);
+        if ($res) {
+            $model->attributes['name'] = Yii::$app->request->get('name', '');
+            $res = $model->save();
+            if ($res) {
+                $ret_msg = ['ok' => true, 'msg' => '修改成功'];
+            } else {
+                $ret_msg = ['ok' => false, 'msg' => '保存失败'];
+            }
+        } else {
+            $ret_msg = ['ok' => false, 'msg' => '无效的牌库'];
         }
 
         return Json::encode($ret_msg);

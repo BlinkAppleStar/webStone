@@ -23,7 +23,7 @@ use yii\base\Model;
     }
 
 */
-class Deck extends MongoModel
+class MgDeck extends MongoModel
 {
     public $tableName = 'deck';
 
@@ -34,7 +34,7 @@ class Deck extends MongoModel
     */
     public function create($hero_id)
     {
-        $hero_model = new Hero();
+        $hero_model = new MgHero();
         $hero = $hero_model->findByPk($hero_id);
 
         if (!$hero) {
@@ -73,7 +73,7 @@ class Deck extends MongoModel
     */
     public function addCard($deck_id, $card_id)
     {
-        $card_model = new Card();
+        $card_model = new MgCard();
         $valid_card = $card_model->findByPk($card_id);
 
         $valid_deck = $this->findByPk($deck_id);
@@ -105,7 +105,7 @@ class Deck extends MongoModel
 
                 if ($card_cnt_limited) {
                     $ret_msg = ['ok' => false, 'msg' => '此套牌无法继续添加该卡牌'];
-                } elseif ($card_model->attributes['career'] != Hero::CAREER_NEUTRAL && $card_model->attributes['career'] != $this->attributes['career']) {
+                } elseif ($card_model->attributes['career'] != MgHero::CAREER_NEUTRAL && $card_model->attributes['career'] != $this->attributes['career']) {
                     $ret_msg = ['ok' => false, 'msg' => '不能添加其他职业的卡牌'];
                 } else {
                     if ($card_exist) {
