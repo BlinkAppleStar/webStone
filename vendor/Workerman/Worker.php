@@ -450,12 +450,12 @@ class Worker
 
         // Pid file.
         if (empty(self::$pidFile)) {
-            self::$pidFile = __DIR__ . "/../" . str_replace('/', '_', self::$_startFile) . ".pid";
+            self::$pidFile = __DIR__ . "/" . str_replace('/', '_', self::$_startFile) . ".pid";
         }
 
         // Log file.
         if (empty(self::$logFile)) {
-            self::$logFile = __DIR__ . '/../workerman.log';
+            self::$logFile = __DIR__ . '/workerman.log';
         }
         touch(self::$logFile);
         chmod(self::$logFile, 0622);

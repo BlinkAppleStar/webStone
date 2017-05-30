@@ -22,7 +22,13 @@ class RedisReader extends Component
     // 长连接有时候可能会断开redis
     public function isConnected()
     {
-        return $this->conn !== null;
+        $return = false;
+        if ($this->conn) {
+            if ($this->conn->Ping() == '+PONG') {
+                $return = true;
+            }
+        }
+        return $return;
     }
 
     /*

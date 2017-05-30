@@ -1,4 +1,20 @@
 
+/*
+    战场队列中事件处理
+*/
+
+function searching_in_queue()
+{
+    // disable all edit button
+    
+
+    ws.send('{"action":"user_match_battle_queue"}');
+}
+
+
+/*
+    分页按钮
+*/
 function page_html(total, page, page_size)
 {
     var left_btn_cnt = 2;
@@ -31,3 +47,4 @@ function page_html(total, page, page_size)
 
     return html;
 }
+

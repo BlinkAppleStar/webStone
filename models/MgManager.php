@@ -44,4 +44,12 @@ class MgManager extends MongoModel
             return false;
         }
     }
+
+    /*
+        计算玩家MMR
+    */
+    public function getMMR($manager_id)
+    {
+        return 1;
+    }
 }

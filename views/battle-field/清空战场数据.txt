@@ -1,0 +1,9 @@
+db.battle.drop()
+
+
+
+
+redis
+del h_user_battle_field_deck
+del z_battle_field_queue
+del h_battle_field

@@ -2,7 +2,7 @@
 use yii\helpers\Url;
 /* @var $this yii\web\View */
 
-$this->title = '编辑你的套牌';
+$this->title = '你的对阵战场';
 $this->params['breadcrumbs'][] = $this->title;
 $this->registerJsFile('@web/js/site.js');
 $this->registerCssFile('@web/css/global.css');
@@ -31,7 +31,6 @@ $this->registerCssFile('@web/css/global.css');
             </div>
         </div>
         <input type="hidden" name="deck_id" id="deck_id" value="<?php echo $model->mongo_id->__toString() ?>" />
-        <input type="hidden" name="manager_id" id="manager_id" value="<?php echo Yii::$app->user->id ?>"/>
     </div>
 
     <table border="0">
@@ -80,8 +79,8 @@ $this->registerCssFile('@web/css/global.css');
 
                     </table>
 
-                    <a href="javascript:;" onclick="ws_join_battle()" class="btn-success btn">加入战场</a>
-                    <a href="javascript:;" onclick="ajax_match_me()" class="btn-success btn">测试匹配</a>
+                    <a href="javascript:;" onclick="ajax_join_battle()" class="btn-success btn">加入战场</a>
+                    <!--<a href="javascript:;" onclick="ajax_match_me()" class="btn-success btn">测试匹配</a>-->
                 </td>
             </tr>
         </table>
@@ -97,44 +96,6 @@ $this->registerCssFile('@web/css/global.css');
 window.onload = function() {
     ajax_list(1, 8);
     ajax_detail();
-};
-
-var ws = new WebSocket("ws://127.0.0.1:2346");
-ws.onopen = function() {
-    //alert("连接成功");
-    ws.send('{"action":"update_connection", "uid":"'+$('#manager_id').val()+'"}');
-};
-
-ws.onmessage = function(e) {
-    var ret_msg = eval('(' + e.data + ')');
-    //alert(ret_msg.request.action);
-    switch (ret_msg.request.action) {
-        case 'update_connection':
-            if (!ret_msg.ok) {
-                alert(ret_msg.msg);
-            }
-            break;
-        case 'user_join_battle_queue':
-            if (!ret_msg.ok) {
-                alert(ret_msg.msg);
-            } else {
-                searching_in_queue();
-            }
-            break;
-        case 'user_match_battle_queue':
-            if (ret_msg.ok) {
-                //alert('进入战场');
-                window.location = '/battle-field/data';
-            }
-            break;
-        default:
-            alert('websocket return handle failed');
-            break;
-    }
-};
-
-ws.onclose = function() {
-
 };
 
 /*
@@ -242,10 +203,7 @@ function ajax_detail()
         function(ret){
             if (ret.ok) {
                 console.log(ret.data.cards);
-                html = '<tr><td colspan="11">'
-                    +'<input type="text" name="deck_name" id="deck_name" value="' + ret.data.name + '" onkeydown="check_deck_name(event)" />'
-                    +'</td><td><span id="current_deck_card_cnt">'+ ret.data.card_cnt +'</span> / 30'
-                    +'</td><td></td></tr>';
+                html = '<tr><td colspan="11">'+'<input type="text" name="deck_name" id="deck_name" value="' + ret.data.name + '" onkeydown="check_deck_name(event)" />'+'</td><td><span id="current_deck_card_cnt">'+ ret.data.card_cnt +'</span> / 30</td></tr>';
                 td_cnt = 0;
                 for (key in ret.data.cards) {
                     if (td_cnt == 0) {
@@ -260,7 +218,6 @@ function ajax_detail()
                         td_cnt = 0;
                     }
                 }
-
                 $('#deck_card_list').html(html);
             } else {
                 alert(ret.msg);
@@ -353,45 +310,46 @@ function ajax_join_battle()
             function(ret){
                 if (ret.ok) {
                     searching_in_queue();
+                } else {
+                    alert(ret.msg);
                 }
-                //alert(ret.msg);
             },
             'json'
         );
     }
 }
-function ws_join_battle()
-{
-    var deck_card_cnt = $('#current_deck_card_cnt').html();
-    if (deck_card_cnt < 30) {
-        alert('套牌不完整');
-    } else {
-        ws.send('{"action":"user_join_battle_queue", "uid":"' + $('#manager_id').val() + '", "deck_id":"'+ $('#deck_id').val() +'"}');
-    }
-}
-
-
 
 /*
     手动匹配战场
 */
-function ajax_match_me()
-{
-    $.get("/battle-field-queue/match",
-        {
-            deck_id:$('#deck_id').val()
-        },
-        function(ret){
-            if (ret.ok) {
-                
-            } else {
-                alert(ret.msg);
-            }
-        },
-        'json'
-    );
-}
+//function ajax_match_me()
+//{
+//    $.get("/battle-field-queue/match",
+//        {
+//            deck_id:$('#deck_id').val()
+//        },
+//        function(ret){
+//            if (ret.ok) {
+//                
+//            } else {
+//                alert(ret.msg);
+//            }
+//        },
+//        'json'
+//    );
+//}
 
 
+
+// 假设服务端ip为127.0.0.1
+ws = new WebSocket("ws://127.0.0.1:2346");
+ws.onopen = function() {
+    alert("连接成功");
+    ws.send('tom');
+    alert("给服务端发送一个字符串：tom");
+};
+ws.onmessage = function(e) {
+    alert("收到服务端的消息：" + e.data);
+};
 
 </script>

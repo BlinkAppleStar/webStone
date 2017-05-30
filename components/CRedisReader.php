@@ -7,7 +7,7 @@ namespace app\components;
 use Yii;
 use yii\base\Component;
 
-class ConsoleRedisReader extends Component
+class CRedisReader extends Component
 {
     public $conn = null;
 

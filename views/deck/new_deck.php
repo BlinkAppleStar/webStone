@@ -45,6 +45,9 @@ function ajax_create_deck()
         },
         function(ret){
             alert(ret.msg);
+            if (ret.ok) {
+                window.location = '/deck/list';
+            }
         },
         'json'
     );
