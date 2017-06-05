@@ -124,7 +124,7 @@ ws.onmessage = function(e) {
         case 'user_match_battle_queue':
             if (ret_msg.ok) {
                 //alert('进入战场');
-                window.location = '/battle-field/data';
+                window.location = '/battle-field/prepare';
             }
             break;
         default:
@@ -244,7 +244,7 @@ function ajax_detail()
                 console.log(ret.data.cards);
                 html = '<tr><td colspan="11">'
                     +'<input type="text" name="deck_name" id="deck_name" value="' + ret.data.name + '" onkeydown="check_deck_name(event)" />'
-                    +'</td><td><span id="current_deck_card_cnt">'+ ret.data.card_cnt +'</span> / 30'
+                    +'</td><td><span id="current_deck_card_cnt">'+ ret.data.cards_cnt +'</span> / 30'
                     +'</td><td></td></tr>';
                 td_cnt = 0;
                 for (key in ret.data.cards) {

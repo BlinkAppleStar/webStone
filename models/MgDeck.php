@@ -16,6 +16,7 @@ use yii\base\Model;
             "_id" : ObjectId("585a47bc7f8b9a43058b4567"),
             "name" : "自定义套牌名字",
             "cards" : [],//套牌中的牌
+            "cards_cnt" : 0, // 套牌中牌数
             "hero_id" : "xxx", // 套牌的英雄
             "career" : 'xxx', // 套牌的英雄职业
             "manager_id" : "xxxx", // 套牌的玩家ID
@@ -50,6 +51,7 @@ class MgDeck extends MongoModel
                 $this->attributes = [
                     'name'          => '自定义套牌',
                     'cards'         => [],
+                    'cards_cnt'     => 0,
                     'hero_id'       => $hero_id,
                     'career'        => $hero_model->attributes['career'],
                     'manager_id'    => Yii::$app->user->id,
@@ -83,7 +85,7 @@ class MgDeck extends MongoModel
             $ret_msg = ['ok' => false, 'msg' => '无效的卡牌'];
         } else {
             $old_card_list = $this->attributes['cards'];
-            if (count($old_card_list) >= self::MAX_CAPACITY) {
+            if ($this->attributes['cards_cnt'] >= self::MAX_CAPACITY) {
                 $ret_msg = ['ok' => false, 'msg' => '已达牌库上限，请先移除卡牌'];
             } else {
                 $card_cnt_limited = false;
@@ -123,6 +125,7 @@ class MgDeck extends MongoModel
                     }
 
                     $this->attributes['cards'] = $new_card_list;
+                    $this->attributes['cards_cnt']++;
 
                     $res = $this->save();
 
@@ -157,6 +160,7 @@ class MgDeck extends MongoModel
                     unset($card_list[$card_id]);
                 }
                 $this->attributes['cards'] = $card_list;
+                $this->attributes['cards_cnt']--;
 
                 $res = $this->save();
 

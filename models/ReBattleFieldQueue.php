@@ -89,6 +89,7 @@ class ReBattleFieldQueue extends Model
                         'end_time'      => 0,
                         'deck_1'        => $deck_1['data'],
                         'deck_2'        => $deck_2['data'],
+                        'state'         => MgBattle::STATE_READY,
                         'winner'        => '',
                     ];
 

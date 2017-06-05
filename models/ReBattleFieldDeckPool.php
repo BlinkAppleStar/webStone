@@ -12,27 +12,9 @@ use yii\base\Model;
  */
 
 /*
-    l_deck_pool_x_x => [
-        '585a47bc7f8b9a43058b4567' => { // battle_id为键
-            "player_1" : "585a47bc7f8b9a43058b4567", // 玩家1
-            "player_2" : "585a47bc7f8b9a43058b4567", // 玩家2
-            "player_1_hp" : 30, // 当前玩家1血量
-            "player_2_hp" : 28, // 当前玩家2血量
-            "player_1_handing_cards_queue" : [],
-            "player_2_handing_cards_queue" : [],
-            "player_1_minion_list" : [],
-            "player_2_minion_list" : [],
-            "player_1_deck_cards_queue" : [],
-            "player_2_deck_cards_queue" : [],
-            "player_1_hero_skill_id" : "",
-            "player_1_hero_skill_state" : 1,
-            "player_2_hero_skill_id" : "",
-            "player_2_hero_skill_state" : 1,
-            "player_1_weapon" : [],
-            "player_2_weapon" : [],
-
-            //"player_1_round_rest_time"
-        }
+    l_deck_pool_x{battle_id}_x{uid} => [
+        '585a47bc7f8b9a43058b4567', //顶部卡牌
+        '585a47bc7f8b9a43058b4567'
         ...
     ]
 
@@ -60,7 +42,7 @@ class ReBattleFieldDeckPool extends Model
                 foreach ($card_list as $card_id) {
                     $length = $redis->conn->Lpush($this->tableName, $card_id);
                 }
-                $ret_msg = ['ok' => true, 'msg' => '可以加入'];
+                $ret_msg = ['ok' => true, 'msg' => '牌池初始化完成'];
             }
         } else {
             $ret_msg = ['ok' => false, 'msg' => 'Redis 链接失败'];
@@ -70,6 +52,18 @@ class ReBattleFieldDeckPool extends Model
     }
 
     /*
-        
+        获取牌库长度
     */
+    public function getLength()
+    {
+        $redis = Yii::$app->Rdb;
+        if ($redis->isConnected() || $redis->connect()) {
+            $length = $redis->conn->Llen($this->tableName);
+            $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $length];
+        } else {
+            $ret_msg = ['ok' => false, 'msg' => 'Redis 链接失败'];
+        }
+
+        return $ret_msg;
+    }
 }

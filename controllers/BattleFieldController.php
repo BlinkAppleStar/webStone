@@ -51,6 +51,45 @@ class BattleFieldController extends BaseController
     }
 
     /*
+        战斗开始选牌重抽页
+    */
+    public function actionPrepare()
+    {
+        $battle = new MgBattle();
+        $valid = $battle->search(['player' => Yii::$app->user->id, 'end_time' => 0, 'state' => 0]);
+        if ($valid['total'] == 1) {
+            return $this->render('prepare', [
+                
+            ]);
+        } else {
+            return $this->redirect('/deck/list');
+        }
+        
+    }
+
+    /*
+        初始化手牌
+    */
+    public function actionInitHandingCards()
+    {
+        $battle = new MgBattle();
+        $ret_msg = $battle->initHanding(Yii::$app->user->id);
+        return Json::encode($ret_msg);
+    }
+
+    /*
+        调整手牌初始化牌库（测试）
+    */
+    public function actionInitDeck()
+    {
+        $remaining_cards = Yii::$app->request->get('remaining_cards');
+
+        $battle = new MgBattle();
+        $ret_msg = $battle->initDeck(Yii::$app->user->id, $remaining_cards);
+        return Json::encode($ret_msg);
+    }
+
+    /*
         获取玩家当前战场数据
     */
     public function actionData()

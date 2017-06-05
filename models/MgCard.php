@@ -85,6 +85,9 @@ class MgCard extends MongoModel
         if ($params['name_like']) {
             $query['name'] = new \MongoRegex('/'.$params['name_like'].'/');
         }
+        if ($params['name']) {
+            $query['name'] = $params['name'];
+        }
         if ($params['type']) {
             $query['type'] = $params['type'];
         }

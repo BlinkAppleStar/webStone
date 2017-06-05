@@ -129,7 +129,6 @@ class DeckController extends BaseController
             if ($model->attributes['manager_id'] != Yii::$app->user->id) {
                 $ret_msg = ['ok' => false, 'msg' => '不能查看别人的牌库'];
             } else {
-                $model->attributes['card_cnt'] = count($model->attributes['cards']);
                 $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $model->attributes];
             }
         } else {

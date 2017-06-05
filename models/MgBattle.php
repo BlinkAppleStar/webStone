@@ -21,6 +21,7 @@ use yii\helpers\Json;
             "end_time" : NumberLong(1482311612),
             "deck_1" : [],
             "deck_2" : [],
+            "state" : 0, 0：准备阶段，1：进行中，2：已结束
             "winner" : "585a47bc7f8b9a43058b4567",
     }
 
@@ -28,6 +29,12 @@ use yii\helpers\Json;
 class MgBattle extends MongoModel
 {
     public $tableName = 'battle';
+
+    const STATE_READY       = 0;
+    const STATE_FIGHTING    = 1;
+    const STATE_END         = 2;
+
+
 
     /*
         结束战斗
@@ -39,6 +46,7 @@ class MgBattle extends MongoModel
             $ret_msg = ['ok' => false, 'msg' => '无效的战斗ID'];
         } else {
             $this->attributes['end_time'] = time();
+            $this->attributes['state']  = self::STATE_END;
             $this->attributes['winner'] = $winner_id;
 
             $res = $this->save();
@@ -100,6 +108,145 @@ class MgBattle extends MongoModel
 
 
             $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $data];
+        } else {
+            $ret_msg = ['ok' => false, 'msg' => '无战场数据'];
+        }
+
+        return $ret_msg;
+    }
+
+    /*
+        单个玩家手牌初始化
+    */
+    public function initHanding($uid)
+    {
+        $battle_list = $this->search(['player' => $uid, 'end_time' => 0]);
+        if ($battle_list['total'] == 1) {
+            $data = array_pop($battle_list['list']);
+            if ($data['player_1'] == $uid) {
+                $data['deck'] = $data['deck_1'];
+            } else {
+                $data['deck'] = $data['deck_2'];
+            }
+
+            $deck_card_list = [];
+            foreach ($data['deck']['cards'] as $card_id => $card_info) {
+                $deck_card_list[] = $card_id;
+                if ($card_info['cnt'] == 2) {
+                    $deck_card_list[] = $card_id;
+                }
+            }
+
+            shuffle($deck_card_list);
+
+            if ($data['player_1'] == $uid) {
+                $handing_card_ids = array_slice($deck_card_list, 0, 3);
+            } else {
+                $handing_card_ids = array_slice($deck_card_list, 0, 4);
+            }
+            
+            $handing_cards = [];
+            foreach ($handing_card_ids as $card_id) {
+                $handing_cards[] = $data['deck']['cards'][$card_id];
+            }
+
+            $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $handing_cards];
+        } else {
+            $ret_msg = ['ok' => false, 'msg' => '无战场数据'];
+        }
+
+        return $ret_msg;
+    }
+
+    /*
+        单个玩家手牌调整后初始化牌库
+    */
+    public function initDeck($uid, $remaining_cards)
+    {
+        $battle_list = $this->search(['player' => $uid, 'end_time' => 0]);
+        if ($battle_list['total'] == 1) {
+            $remaining_cards_cnt = count($remaining_cards);
+            $redraw_cards_cnt = 0;
+            $battle = array_pop($battle_list['list']);
+            $coin_cards = [];
+            if ($battle['player_1'] == $uid) {
+                $battle['deck'] = $battle['deck_1'];
+                $redraw_cards_cnt = 3 - $remaining_cards_cnt;
+            } else {
+                $battle['deck'] = $battle['deck_2'];
+                $redraw_cards_cnt = 4 - $remaining_cards_cnt;
+                $card_model = new MgCard();
+                $coin_card = $card_model->findByAttributes(['name' => '幸运币']);
+                $coin_cards[] = $coin_card['_id']->__toString();
+            }
+
+            $count_values = array_count_values($remaining_cards);
+            $deck_card_list = [];
+            foreach ($battle['deck']['cards'] as $card_id => $card_info) {
+                if ($count_values[$card_id] >= 2) {
+                    continue;
+                } elseif ($count_values[$card_id] == 1) {
+                    if ($card_info['cnt'] == 2) {
+                        $deck_card_list[] = $card_id;
+                    } else {
+                        continue;
+                    }
+                } else {
+                    $deck_card_list[] = $card_id;
+                    if ($card_info['cnt'] == 2) {
+                        $deck_card_list[] = $card_id;
+                    }
+                }
+                
+            }
+
+            shuffle($deck_card_list);
+
+            $redraw_card_ids = array_slice($deck_card_list, 0, $redraw_cards_cnt);
+            $redraw_cards = [];
+            foreach ($redraw_card_ids as $card_id) {
+                $redraw_cards[] = $battle['deck']['cards'][$card_id];
+            }
+
+            $rest_card_ids = array_slice($deck_card_list, $redraw_cards_cnt);
+            $redis_deck_pool = new ReBattleFieldDeckPool($battle['_id']->__toString(), $uid);
+            $ret_msg = $redis_deck_pool->init($rest_card_ids);
+
+            if ($ret_msg['ok']) {
+                $handing_card_ids = array_merge($remaining_cards, $redraw_cards, $coin_cards);
+                $redis_handing_pool = new ReBattleFieldHandingPool($battle['_id']->__toString(), $uid);
+                $ret_msg = $redis_handing_pool->init($handing_card_ids);
+            }
+        } else {
+            $ret_msg = ['ok' => false, 'msg' => '无战场数据'];
+        }
+
+        return $ret_msg;
+    }
+
+    /*
+        检查指定玩家的战场对手是否已经准备就绪（可以开始战斗）
+    */
+    public function checkOpponentReadyByUid($uid)
+    {
+        $battle_list = $this->search(['player' => $uid, 'end_time' => 0]);
+        if ($battle_list['total'] == 1) {
+            $battle = array_pop($battle_list['list']);
+            if ($battle['player_1'] == $uid) {
+                $redis_deck_pool = new ReBattleFieldDeckPool($battle['_id']->__toString(), $battle['player_2']);
+            } else {
+                $redis_deck_pool = new ReBattleFieldDeckPool($battle['_id']->__toString(), $battle['player_1']);
+            }
+
+            $pool_len = $redis_deck_pool->getLength();
+            if ($pool_len > 0) {
+                $ret_msg = ['ok' => true, 'msg' => '准备就绪', 'data' => [
+                    $battle['player_1'],
+                    $battle['player_2']
+                ]];
+            } else {
+                $ret_msg = ['ok' => false, 'msg' => '对手未就绪'];
+            }
         } else {
             $ret_msg = ['ok' => false, 'msg' => '无战场数据'];
         }

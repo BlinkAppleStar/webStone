@@ -3,6 +3,7 @@ use Workerman\Worker;
 use app\models\ReBattleFieldQueue;
 use app\models\ReUserWSMap;
 use app\models\ReWSUserMap;
+use app\models\MgBattle;
 use yii\helpers\Json;
 //phpinfo();
 
@@ -61,14 +62,19 @@ $ws_worker->onMessage = function($connection, $incoming_string)
 
     switch ($params['action']) {
         case 'update_connection':
+
             $map = new ReUserWSMap();
             $ret_msg = $map->update($params['uid'], $connection->connect_id);
             break;
+
         case 'user_join_battle_queue':
+
             $queue = new ReBattleFieldQueue();
             $ret_msg = $queue->input($params['deck_id']);
             break;
+
         case 'user_match_battle_queue':
+
             $queue = new ReBattleFieldQueue();
             $ret_msg = $queue->match();
 
@@ -77,6 +83,22 @@ $ws_worker->onMessage = function($connection, $incoming_string)
                 $ret_connections = $map->getConnByUid(array_values($ret_msg['data']));
             }
 
+            break;
+
+        case 'user_init_deck':
+
+            $battle = new MgBattle();
+            $ret_msg = $battle->initDeck($params['uid'], $params['remaining_cards']);
+            if ($ret_msg['ok']) {
+                $ret_msg = $battle->checkOpponentReadyByUid($params['uid']);
+                if ($ret_msg['ok']) {
+                    $map = new ReUserWSMap();
+                    $ret_connections = $map->getConnByUid($ret_msg['data']);
+                    $ret_msg['data'] = 'jump_to_battle';
+                } else {
+                    $ret_msg = ['ok' => true, 'msg' => '已就绪，等待对手选牌', 'data' => 'waiting'];
+                }
+            }
             break;
 
         default:

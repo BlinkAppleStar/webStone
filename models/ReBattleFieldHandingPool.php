@@ -6,42 +6,48 @@ use Yii;
 use yii\base\Model;
 
 /**
- * Redis 战场基本信息类
+ * Redis 战场玩家手牌池类
  *
  *
  */
 
 /*
-    h_battle_field => [
-        '585a47bc7f8b9a43058b4567' => { // battle_id为键
-            "player_1" : "585a47bc7f8b9a43058b4567", // 玩家1
-            "player_2" : "585a47bc7f8b9a43058b4567", // 玩家2
-            "player_1_hp" : 30, // 当前玩家1血量
-            "player_2_hp" : 28, // 当前玩家2血量
-            "player_1_handing_cards_queue" : [],
-            "player_2_handing_cards_queue" : [],
-            "player_1_minion_list" : [],
-            "player_2_minion_list" : [],
-            "player_1_deck_cards_queue" : [],
-            "player_2_deck_cards_queue" : [],
-            "player_1_hero_skill_id" : "",
-            "player_1_hero_skill_state" : 1,
-            "player_2_hero_skill_id" : "",
-            "player_2_hero_skill_state" : 1,
-            "player_1_weapon" : [],
-            "player_2_weapon" : [],
-
-            //"player_1_round_rest_time"
-        }
+    l_handing_pool_x{battle_id}_x{uid} => [
+        '585a47bc7f8b9a43058b4567',// card_id
+        '585a47bc7f8b9a43058b4567'
         ...
     ]
 
 */
-class ReBattleField extends Model
+class ReBattleFieldHandingPool extends Model
 {
-    public $tableName = 'z_battle_field';
+    public $tableName = 'l_handing_pool_';
+
+    public function __construct($battle_id, $player_id)
+    {
+        $this->tableName = $this->tableName . $battle_id . '_' . $player_id;
+    }
 
     /*
-        
+        开局初始化手牌
     */
+    public function init($card_list)
+    {
+        $redis = Yii::$app->Rdb;
+        if ($redis->isConnected() || $redis->connect()) {
+            $duplicate = $redis->conn->Llen($this->tableName);
+            if ($duplicate) {
+                $ret_msg = ['ok' => false, 'msg' => '手牌非空，不能重新初始化'];
+            } else {
+                foreach ($card_list as $card_id) {
+                    $length = $redis->conn->Lpush($this->tableName, $card_id);
+                }
+                $ret_msg = ['ok' => true, 'msg' => '手牌初始化完成'];
+            }
+        } else {
+            $ret_msg = ['ok' => false, 'msg' => 'Redis 链接失败'];
+        }
+
+        return $ret_msg;
+    }
 }
