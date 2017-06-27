@@ -1,6 +1,7 @@
 <?php 
 use Workerman\Worker;
 use app\models\ReBattleFieldQueue;
+use app\models\ReBattleField;
 use app\models\ReUserWSMap;
 use app\models\ReWSUserMap;
 use app\models\MgBattle;
@@ -61,19 +62,19 @@ $ws_worker->onMessage = function($connection, $incoming_string)
     $ret_connections = [];
 
     switch ($params['action']) {
-        case 'update_connection':
+        case 'update_connection': // 更新链接
 
             $map = new ReUserWSMap();
             $ret_msg = $map->update($params['uid'], $connection->connect_id);
             break;
 
-        case 'user_join_battle_queue':
+        case 'user_join_battle_queue': // 加入战场队列
 
             $queue = new ReBattleFieldQueue();
             $ret_msg = $queue->input($params['deck_id']);
             break;
 
-        case 'user_match_battle_queue':
+        case 'user_match_battle_queue': // 战场队列匹配
 
             $queue = new ReBattleFieldQueue();
             $ret_msg = $queue->match();
@@ -85,20 +86,45 @@ $ws_worker->onMessage = function($connection, $incoming_string)
 
             break;
 
-        case 'user_init_deck':
+        case 'user_init_deck': // 洗牌
 
             $battle = new MgBattle();
+            $battle_info = $battle->getCurrentByUid($params['uid']);
             $ret_msg = $battle->initDeck($params['uid'], $params['remaining_cards']);
             if ($ret_msg['ok']) {
                 $ret_msg = $battle->checkOpponentReadyByUid($params['uid']);
                 if ($ret_msg['ok']) {
-                    $map = new ReUserWSMap();
-                    $ret_connections = $map->getConnByUid($ret_msg['data']);
-                    $ret_msg['data'] = 'jump_to_battle';
+                    $redis_battle = new ReBattleField();
+                    $start_res = $redis_battle->startRound($battle_info['data']['_id']);
+                    if (!$start_res['ok']) {
+                        $ret_msg = $start_res;
+                    } else {
+                        $opponent_uid = $ret_msg['data'];
+                        $map = new ReUserWSMap();
+                        $ret_connections = $map->getConnByUid($opponent_uid);
+                        $ret_msg['data'] = 'jump_to_battle';
+                    }
                 } else {
                     $ret_msg = ['ok' => true, 'msg' => '已就绪，等待对手选牌', 'data' => 'waiting'];
                 }
             }
+            break;
+
+        case 'end_round': //回合结束
+            $redis_battle = new ReBattleField();
+            $ret_msg = $redis_battle->endRound($params['battle_id'], $params['uid']);
+            $map = new ReUserWSMap();
+            $ret_connections = $map->getConnByUid($ret_msg['data']['opponent_id']);
+            $ret_connections[] = $connection->connect_id;
+            break;
+
+        case 'draw_card': // 抽一张牌
+            $redis_battle = new ReBattleField();
+            $ret_msg = $redis_battle->drawCardFor($params['battle_id'], $params['uid']);
+            $map = new ReUserWSMap();
+            $ret_connections = $map->getConnByUid($ret_msg['data']['opponent_id']);
+            $ret_connections[] = $connection->connect_id;
+
             break;
 
         default:

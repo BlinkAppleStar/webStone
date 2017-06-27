@@ -174,6 +174,7 @@ class SettingController extends BaseController
                 'name'          => Yii::$app->request->post('name', ''),
                 'career'        => Yii::$app->request->post('career', ''),
                 'avatar'        => Yii::$app->request->post('avatar', ''),
+                'skill_image'   => Yii::$app->request->post('skill_image', ''),
                 'logo'          => Yii::$app->request->post('logo', ''),
             ];
 

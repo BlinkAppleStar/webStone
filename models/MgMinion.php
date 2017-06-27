@@ -6,7 +6,7 @@ use Yii;
 use yii\base\Model;
 
 /**
- * MongoDb 随从类
+ * MongoDb 随从原始类
  *
  *
  */
@@ -17,7 +17,7 @@ use yii\base\Model;
             "name" : "阿古斯之盾",
             "race" : "mach", //随从种族：murloc 
             "damage" : "2", // 随从攻击力
-            "hp" : "3", // 随从血量
+            "hp" : "3", // 随从正常最大血量
             "skills" : [], // 技能列表
             "mana" : "4", // 显示的法力值
             "image" : "xxxx", // 图片地址
@@ -25,7 +25,7 @@ use yii\base\Model;
     }
 
 */
-class MgAttendant extends MongoModel
+class MgMinion extends MongoModel
 {
     public $tableName = 'attendant';
 

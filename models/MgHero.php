@@ -17,6 +17,7 @@ use yii\base\Model;
             "name" : "安度因", 
             "career" :"priest", // 牧师 priest, 法师 mage, 术士 warlock, 德鲁伊 druid, 猎人 hunter, 圣骑士 paladin, 盗贼 rogue, 萨满 shaman, 战士 warrior, 中立 Neutral, 特殊 system
             "avatar" : "xxxxx", // 头像地址
+            "skill_image" : "xxxxxx", // 英雄技能图标
             "logo" : "xxxx",
     }
 

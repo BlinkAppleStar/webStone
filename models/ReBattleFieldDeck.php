@@ -14,7 +14,7 @@ use yii\helpers\Json;
 
 /*
     h_user_battle_field_deck => [
-        'manager_id' => { // 玩家正在使用的牌库
+        'uid' => { // 玩家正在使用的牌库
             "_id" : {
                 "$_id" : "591a7c217f8b9a3c058b4567"
             },

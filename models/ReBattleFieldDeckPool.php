@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\base\Model;
+use yii\helpers\Json;
 
 /**
  * Redis 战场玩家卡牌池类
@@ -31,7 +32,7 @@ class ReBattleFieldDeckPool extends Model
     /*
         开局初始化牌库
     */
-    public function init($card_list)
+    public function initiate($card_list)
     {
         $redis = Yii::$app->Rdb;
         if ($redis->isConnected() || $redis->connect()) {
@@ -39,8 +40,29 @@ class ReBattleFieldDeckPool extends Model
             if ($duplicate) {
                 $ret_msg = ['ok' => false, 'msg' => '牌池非空，不能重新初始化'];
             } else {
+                $redis_card = new ReCard();
+                $card_model = new MgCard();
                 foreach ($card_list as $card_id) {
-                    $length = $redis->conn->Lpush($this->tableName, $card_id);
+                    $r_card_id = uniqid('', true);
+                    while ($redis_card->exsits($r_card_id)) {
+                        $r_card_id = uniqid('', true);
+                    }
+                    $res = $card_model->findByPk($card_id);
+                    if (!$res) {
+                        $ret_msg = ['ok' => false, 'msg' => '无效的卡牌ID，不能初始化'];
+                        break;
+                    }
+
+                    $card_model->attributes['_id'] = $card_model->mongo_id->__toString();
+                    unset($card_model->attributes['updated_time']);
+
+                    $res = $redis_card->set($r_card_id, $card_model->attributes);
+                    if (!$res['ok']) {
+                        $ret_msg = ['ok' => false, 'msg' => '卡牌缓冲失败，错误'];
+                        break;
+                    }
+
+                    $length = $redis->conn->Lpush($this->tableName, $r_card_id);
                 }
                 $ret_msg = ['ok' => true, 'msg' => '牌池初始化完成'];
             }
@@ -59,11 +81,25 @@ class ReBattleFieldDeckPool extends Model
         $redis = Yii::$app->Rdb;
         if ($redis->isConnected() || $redis->connect()) {
             $length = $redis->conn->Llen($this->tableName);
-            $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $length];
         } else {
-            $ret_msg = ['ok' => false, 'msg' => 'Redis 链接失败'];
+            $length = 0;
         }
 
-        return $ret_msg;
+        return $length;
+    }
+
+    /*
+        抽一张牌
+    */
+    public function pop()
+    {
+        $redis = Yii::$app->Rdb;
+        if ($redis->isConnected() || $redis->connect()) {
+            $r_card_id = $redis->conn->Lpop($this->tableName);
+        } else {
+            $r_card_id = null;
+        }
+
+        return $r_card_id;
     }
 }

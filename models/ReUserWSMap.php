@@ -68,21 +68,16 @@ class ReUserWSMap extends Model
         $redis = Yii::$app->Rdb;
         if ($redis->isConnected() || $redis->connect()) {
             if (is_array($uid)) {
-                $res = $redis->conn->Hmget($this->tableName, $uid);
+                $res = (array)$redis->conn->Hmget($this->tableName, $uid);
             } else {
-                $res = $redis->conn->Hget($this->tableName, $uid);
+                $res = (array)$redis->conn->Hget($this->tableName, $uid);
             }
             
-            if ($res) {
-                $ret_msg = ['ok' => true, 'msg' => '获取成功', 'data' => $res];
-            } else {
-                $ret_msg = ['ok' => false, 'msg' => '获取失败'];
-            }
         } else {
-            $ret_msg = ['ok' => false, 'msg' => 'Redis 链接失败'];
+            $res = [];
         }
 
-        return $ret_msg;
+        return $res;
     }
 
 }

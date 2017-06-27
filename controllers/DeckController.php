@@ -10,6 +10,7 @@ use app\models\MgManager;
 use app\models\MgCard;
 use app\models\MgHero;
 use app\models\MgDeck;
+use app\models\ReHero;
 
 class DeckController extends BaseController
 {
@@ -32,6 +33,11 @@ class DeckController extends BaseController
 
             return Json::encode(['ok' => true, 'msg' => '获取成功', 'data' => $data]);
         } else {
+            $redis_hero = new ReHero();
+            if (!$redis_hero->isInitiated()) {
+                $redis_hero->initiate();
+            }
+
             return $this->render('deck_list', [
                 'type_list'     => $type_list,
                 'career_list'   => $career_list,

@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\base\Model;
+use yii\helpers\Json;
 
 /**
  * Redis 战场基本信息类
@@ -37,9 +38,14 @@ use yii\base\Model;
     ]
 
 */
-class ReBattleField extends Model
+class ReBattleFieldMinionPool extends Model
 {
-    public $tableName = 'z_battle_field';
+    public $tableName = 'l_minion_pool';
+
+    public function __construct($battle_id, $player_id)
+    {
+        $this->tableName = $this->tableName . $battle_id . '_' . $player_id;
+    }
 
     /*
         

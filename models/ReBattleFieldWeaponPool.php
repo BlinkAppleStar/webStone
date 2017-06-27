@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\base\Model;
+use yii\helpers\Json;
 
 /**
  * Redis 战场玩家卡牌池类
@@ -37,9 +38,9 @@ use yii\base\Model;
     ]
 
 */
-class ReBattleFieldDeckPool extends Model
+class ReBattleFieldWeaponPool extends Model
 {
-    public $tableName = 'l_deck_pool_';
+    public $tableName = 'l_weapon_pool_';
 
     public function __construct($battle_id, $player_id)
     {

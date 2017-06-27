@@ -67,6 +67,17 @@ $this->params['breadcrumbs'][] = $this->title;
                             <?php } ?>
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            英雄技能图标: 
+                        </td>
+                        <td>
+                            <input type="text" name="skill_image" value="<?php echo $model->attributes['skill_image'] ?>" size="50" />
+                            <?php if ($model->attributes['skill_image']) { ?>
+                            <img src="<?php echo $model->attributes['skill_image'] ?>" />
+                            <?php } ?>
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>

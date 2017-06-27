@@ -9,83 +9,73 @@ $this->registerCssFile('@web/css/global.css');
 ?>
 <div class="site-index">
 
-    <div class="msg"></div>
-
     <div class="form-horizontal">
         <div class="form-group">
-            <label class="col-lg-1 control-label">类型: </label>
-            <div class="col-lg-3">
-                <input type="radio" name="type" value="" onclick="ajax_list(1, 8)" checked="checked" />全部
-                <?php foreach ($card_type_list as $type => $label) { ?>
-                <input type="radio" name="type" value="<?php echo $type ?>" onclick="ajax_list(1, 8)" /><?php echo $label ?>
-                <?php } ?>
-            </div>
+            <span id="opponent_player"></span>
         </div>
-        <div class="form-group">
-            <label class="col-lg-1 control-label">级别: </label>
-            <div class="col-lg-3">
-                <input type="radio" name="level" value="" onclick="ajax_list(1, 8)" checked="checked" />全部
-                <?php foreach ($card_level_list as $type => $label) { ?>
-                <input type="radio" name="level" value="<?php echo $type ?>" onclick="ajax_list(1, 8)" /><?php echo $label ?>
-                <?php } ?>
-            </div>
-        </div>
-        <input type="hidden" name="deck_id" id="deck_id" value="<?php echo $model->mongo_id->__toString() ?>" />
     </div>
-
-    <table border="0">
-        <tr>
-            <td id="career_btn_1">
-                <img src="/images/en/hero/career/<?php echo $model->attributes['career'] ?>.png" onclick="switch_career(1)" />
-                <input type="radio" name="career" id="career_radio_1" value="<?php echo $model->attributes['career'] ?>" checked="checked" class="hide" />
-            </td>
-            <td id="career_btn_2">
-                <img src="/images/en/hero/career/neutral.png" class="small_career_log" onclick="switch_career(2)" />
-                <input type="radio" name="career" id="career_radio_2" value="neutral" class="hide" />
-            </td>
-        </tr>
-    </table>
-
 
     <div class="body-content" >
         <table>
             <tr>
-                <td>
-                    <table border="1" id="card_list">
+                <td width="500" colspan="2">
+                    <table border="1" id="opponent_handing_cards">
 
                     </table>
-
-                    <div class="height_10"></div>
-                    
-                    <div class="body-content" id="pagination">
-                        
-                    </div>
-
-                    <div class="height_10"></div>
-
-                    <div class="body-content" id="mana_btns">
-                        <?php for($i = 0; $i <= 7; $i++) { ?>
-                        <img src="/images/mana<?php echo $i ?>.png" id="mana_<?php echo $i ?>" onclick="switch_mana('<?php echo $i ?>')" class="" />
-                        <?php }?>
-                        <input type="hidden" name="mana_selected" id="mana_selected" value="" />
-                    </div>
-
                 </td>
-                <td width="300px">
-                    
-                </td>
-                <td>
-                    <table border="0" id="deck_card_list">
+                <td width="300">
+                    <table border="1" id="opponent_mana">
 
                     </table>
+                </td>
+                <td id="opponent_weapon">
+                    
+                </td>
+                <td id="opponent_hero">
+                    
+                </td>
+                <td id="opponent_hero_skill">
+                    
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <table border="1" id="opponent_minion_holder" height="200">
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <table border="1" id="my_minion_holder" height="200">
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td width="500" colspan="2">
+                    <table border="1" id="my_handing_cards">
 
-                    <a href="javascript:;" onclick="ajax_join_battle()" class="btn-success btn">加入战场</a>
-                    <!--<a href="javascript:;" onclick="ajax_match_me()" class="btn-success btn">测试匹配</a>-->
+                    </table>
+                </td>
+                <td width="300">
+                    <table border="1" id="my_mana">
+                    </table>
+                </td>
+                <td id="my_weapon">
+                </td>
+                <td id="my_hero">
+                </td>
+                <td id="my_hero_skill">
                 </td>
             </tr>
         </table>
     </div>
-
+    <a href="javascript:;" id="end_turn_btn" class="btn-success btn" onclick="end_my_turn()">结束回合</a>
+    <a href="javascript:;" id="waiting_turn_btn" class="btn-warning btn"  >对手回合</a>
+    <input type="hidden" name="uid" id="uid" value="<?php echo Yii::$app->user->id ?>"/>
+    <!--<a href="javascript:;" id="test_draw_card_btn" onclick="draw_me_card()" class="btn-warning btn"  >测试抽牌</a>-->
 
 
 
@@ -94,262 +84,187 @@ $this->registerCssFile('@web/css/global.css');
 <!--<a href="javascript:;" onclick="page_html(14, 2, 10)"> 测试 </a>-->
 <script type="text/javascript">
 window.onload = function() {
-    ajax_list(1, 8);
-    ajax_detail();
+    ajax_loading();
 };
 
-/*
-    切换卡牌职业
-*/
-function switch_career(id)
-{
-    if (id == '1') {
-        $('#career_btn_1 img').removeClass('small_career_log');
-        $('#career_radio_1').prop('checked', true);
-        $('#career_radio_2').prop('checked', false);
-        $('#career_btn_2 img').addClass('small_career_log');
-    } else {
-        $('#career_btn_2 img').removeClass('small_career_log');
-        $('#career_radio_2').prop('checked', true);
-        $('#career_radio_1').prop('checked', false);
-        $('#career_btn_1 img').addClass('small_career_log');
-    }
+var ws = new WebSocket("ws://127.0.0.1:2346");
+ws.onopen = function() {
+    //alert("连接成功");
+    ws.send('{"action":"update_connection", "uid":"'+$('#uid').val()+'"}');
+};
 
-    ajax_list(1, 8);
-}
-
-/*
-    切换卡牌费用
-*/
-function switch_mana(id)
-{
-    if ($('#mana_'+id).hasClass('selected')) {
-        $('#mana_selected').val('');
-        $('#mana_'+id).attr('src', '/images/mana'+id+'.png');
-        $('#mana_'+id).removeClass('selected');
-    } else {
-        for (var i = 0; i <= 7; i++){
-            if ($('#mana_'+i).hasClass('selected')) {
-                $('#mana_'+i).attr('src', '/images/mana'+i+'.png');
-                $('#mana_'+i).removeClass('selected');
+ws.onmessage = function(e) {
+    var ret_msg = eval('(' + e.data + ')');
+    //alert(ret_msg.request.action);
+    switch (ret_msg.request.action) {
+        case 'update_connection':
+            if (!ret_msg.ok) {
+                alert(ret_msg.msg);
             }
-        }
-        $('#mana_selected').val(id);
-        $('#mana_'+id).attr('src', '/images/mana'+id+'_selected.png');
-        $('#mana_'+id).addClass('selected');
-    }
-
-    ajax_list(1, 8);
-}
-
-
-/*
-    渲染列表
-*/
-function ajax_list(page, page_size)
-{
-    var mana = '';
-    var mana_min = '';
-
-    if ($('#mana_selected').val() == '7') {
-        mana_min = 7;
-    } else {
-        mana = $('#mana_selected').val();
-    }
-
-    $.get("/setting/card-list",
-        {
-            type:$('input:radio[name="type"]:checked').val(),
-            name_like:$('#name_like').val(),
-            mana:mana,
-            mana_min:mana_min,
-            career:$('input:radio[name="career"]:checked').val(),
-            level:$('input:radio[name="level"]:checked').val(),
-            page:page,
-            page_size:page_size
-        },
-        function(ret){
-            var html = '';
-            td_cnt = 0;
-            for (key in ret.data.list) {
-                if (td_cnt == 0) {
-                    html += '<tr>';
-                }
-                html += '<td>'+'<img src="' + ret.data.list[key]['image'] + '" width="100" height="120" onclick="ajax_add_card('+ "'" + key + "'" +')" />'+'</td>';
-                td_cnt++;
-                if (td_cnt == 4) {
-                    html += '</tr>';
-                    td_cnt = 0;
-                }
-            }
-
-            $('#card_list').html(html);
-
-            $('#pagination').html(page_html(ret.data.total, page, page_size));
-        },
-        'json'
-    );
-}
-
-/*
-    刷新牌库信息
-*/
-function ajax_detail()
-{
-    $.get("/deck/detail",
-        {
-            id:$('#deck_id').val()
-        },
-        function(ret){
-            if (ret.ok) {
-                console.log(ret.data.cards);
-                html = '<tr><td colspan="11">'+'<input type="text" name="deck_name" id="deck_name" value="' + ret.data.name + '" onkeydown="check_deck_name(event)" />'+'</td><td><span id="current_deck_card_cnt">'+ ret.data.card_cnt +'</span> / 30</td></tr>';
-                td_cnt = 0;
-                for (key in ret.data.cards) {
-                    if (td_cnt == 0) {
-                        html += '<tr>';
-                    }
-
-                    html += '<td><img src="' + ret.data.cards[key].image + '" width="50" height="60" onclick="ajax_remove_card('+"'" + key + "'" +')" /></td>';
-                    html += '<td>x '+ret.data.cards[key].cnt+'</td>';
-                    td_cnt++;
-                    if (td_cnt == 6) {
-                        html += '</tr>';
-                        td_cnt = 0;
-                    }
-                }
-                $('#deck_card_list').html(html);
-            } else {
-                alert(ret.msg);
-            }
-        },
-        'json'
-    );
-}
-
-/*
-    添加卡牌到牌库
-*/
-function ajax_add_card(card_id)
-{
-    $.get("/deck/add-card",
-        {
-            deck_id:$('#deck_id').val(),
-            card_id:card_id
-        },
-        function(ret){
-            if (ret.ok) {
-                ajax_detail();
-            } else {
-                alert(ret.msg);
-            }
-        },
-        'json'
-    );
-}
-
-/*
-    从牌库移除卡牌
-*/
-function ajax_remove_card(card_id)
-{
-    $.get("/deck/remove-card",
-        {
-            deck_id:$('#deck_id').val(),
-            card_id:card_id
-        },
-        function(ret){
-            if (ret.ok) {
-                ajax_detail();
-            } else {
-                alert(ret.msg);
-            }
-        },
-        'json'
-    );
-}
-
-/*
-    编辑牌库名字
-*/
-function check_deck_name(e)
-{
-    var curKey = e.which;
-    if (curKey == 13) {
-        $.get("/deck/edit-name",
-            {
-                deck_id:$('#deck_id').val(),
-                name:$('#deck_name').val()
-            },
-            function(ret){
-                if (ret.ok) {
-                    ajax_detail();
-                    alert(ret.msg);
+            break;
+        case 'end_round':
+            //alert(ret_msg.msg);
+            if (ret_msg.ok) {
+                if (ret_msg.data.opponent_id == $('#uid').val()) { // 该我了
+                    draw_me_card();
+                    //$('#end_turn_btn').show();
+                    //$('#waiting_turn_btn').hide();
                 } else {
-                    alert(ret.msg);
+                    // 等待对手回合
+                    //$('#end_turn_btn').hide();
+                    //$('#waiting_turn_btn').show();
                 }
-            },
-            'json'
-        );
-    }
-}
-
-/*
-    使用牌库加入战场队列
-*/
-function ajax_join_battle()
-{
-    var deck_card_cnt = $('#current_deck_card_cnt').html();
-    if (deck_card_cnt < 30) {
-        alert('套牌不完整');
-    } else {
-        $.get("/battle-field/join",
-            {
-                deck_id:$('#deck_id').val()
-            },
-            function(ret){
-                if (ret.ok) {
-                    searching_in_queue();
+            }
+            break;
+        case 'draw_card':
+            if (ret_msg.ok) {
+                if (ret_msg.data.opponent_id == $('#uid').val()) { // 对方抽了牌
+                    //alert('对方抽牌');
                 } else {
-                    alert(ret.msg);
+                    //alert('我抽牌');
+                    // 我方刚抽了牌
                 }
-            },
-            'json'
-        );
+                ajax_loading();
+            }
+            break;
+        default:
+            alert('websocket return handle failed');
+            break;
     }
-}
+};
+
+ws.onclose = function() {
+
+};
+
+var battle_id = '<?php echo $battle_id ?>';
 
 /*
-    手动匹配战场
+    页面加载
 */
-//function ajax_match_me()
-//{
-//    $.get("/battle-field-queue/match",
+function ajax_loading()
+{
+    $.get("/battle-field/data",
+        {
+            'battle_id' : battle_id
+        },
+        function(ret){
+            if (ret.ok) {
+                // 对手手牌
+                html = '<tr>';
+                for (i = 0; i < ret.data.opponent_handing_pool_len; i++)
+                {
+                    html += '<td><img src="/images/en/card/System/card_back.png" width="60" height="80" title="'+ ret.data.opponent_handing_pool_len +'张手牌" /></td>';
+                }
+                html += '</tr>';
+                $('#opponent_handing_cards').html(html);
+
+                // 对手魔法值
+                html = '<tr><td>' + ret.data.opponent_mana + ' / ' + ret.data.opponent_mana_max + '';
+                var used_mana_cnt = ret.data.opponent_mana_max - ret.data.opponent_mana;
+                for (i = 0; i < ret.data.opponent_mana; i++)
+                {
+                    html += '<img src="/images/mana.png" />';
+                }
+                for (i = 0; i < ret.data.used_mana_cnt; i++)
+                {
+                    html += '<img src="/images/mana_used.png" />';
+                }
+                html += '</td></tr>';
+                $('#opponent_mana').html(html);
+
+                // 对手头像
+                html = '<img src="'+ret.data.opponent_avatar+'" width="120" height="130" />' + ret.data.opponent_hp + ' / 30';
+                $('#opponent_hero').html(html);
+
+                // 对手技能
+                if (ret.data.opponent_skill_on) {
+                    html = '<img src="'+ret.data.opponent_skill+'" width="60" height="60" />';
+                } else {
+                    html = '<img src="/images/en/hero/skill/used.png" width="60" height="60" />';
+                }
+                $('#opponent_hero_skill').html(html);
+
+                // 我的魔法值
+                html = '<tr><td>' + ret.data.my_mana + ' / ' + ret.data.my_mana_max + '';
+                used_mana_cnt = ret.data.my_mana_max - ret.data.my_mana;
+                for (i = 0; i < ret.data.my_mana; i++)
+                {
+                    html += '<img src="/images/mana.png" />';
+                }
+                for (i = 0; i < ret.data.used_mana_cnt; i++)
+                {
+                    html += '<img src="/images/mana_used.png" />';
+                }
+                html += '</td></tr>';
+                $('#my_mana').html(html);
+
+                // 我的头像
+                html = '<img src="'+ret.data.my_avatar+'" width="120" height="130" />' + ret.data.my_hp + ' / 30';
+                $('#my_hero').html(html);
+
+                // 我的技能
+                if (ret.data.my_skill_on) {
+                    html = '<img src="'+ret.data.my_skill+'" width="60" height="60" />';
+                } else {
+                    html = '<img src="/images/en/hero/skill/used.png" width="60" height="60" />';
+                }
+                $('#my_hero_skill').html(html);
+
+                // 我的手牌
+                html = '<tr>';
+                for (key in ret.data.my_handing_cards)
+                {
+                    html += '<td><img src="'+ret.data.my_handing_cards[key].image+'" width="80" height="120" title="'+ ret.data.my_handing_cards_len +'张手牌" /></td>';
+                }
+                html += '</tr>';
+                $('#my_handing_cards').html(html);
+
+                // 回合按钮
+                if (ret.data.round_player == 'opponent') {
+                    $('#end_turn_btn').hide();
+                    $('#waiting_turn_btn').show();
+                } else {
+                    $('#end_turn_btn').show();
+                    $('#waiting_turn_btn').hide();
+                }
+            } else {
+                alert(ret.msg);
+            }
+        },
+        'json'
+    );
+}
+
+// 通知抽一张牌
+function draw_me_card()
+{
+//    $.get("/battle-field/draw-card",
 //        {
-//            deck_id:$('#deck_id').val()
+//            'battle_id':battle_id,
+//            'player_id':$('#uid').val()
 //        },
 //        function(ret){
-//            if (ret.ok) {
-//                
-//            } else {
-//                alert(ret.msg);
-//            }
+//
 //        },
 //        'json'
 //    );
-//}
+    ws.send('{"action":"draw_card", "uid":"' + $('#uid').val() + '", "battle_id":"'+ battle_id +'"}');
+}
 
-
-
-// 假设服务端ip为127.0.0.1
-ws = new WebSocket("ws://127.0.0.1:2346");
-ws.onopen = function() {
-    alert("连接成功");
-    ws.send('tom');
-    alert("给服务端发送一个字符串：tom");
-};
-ws.onmessage = function(e) {
-    alert("收到服务端的消息：" + e.data);
-};
+// 结束回合
+function end_my_turn()
+{
+//    $.get("/battle-field/end-round",
+//        {
+//            'battle_id':battle_id
+//        },
+//        function(ret){
+//
+//        },
+//        'json'
+//    );
+    ws.send('{"action":"end_round", "uid":"' + $('#uid').val() + '", "battle_id":"'+ battle_id +'"}');
+}
 
 </script>

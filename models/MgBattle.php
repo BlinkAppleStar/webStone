@@ -210,12 +210,12 @@ class MgBattle extends MongoModel
 
             $rest_card_ids = array_slice($deck_card_list, $redraw_cards_cnt);
             $redis_deck_pool = new ReBattleFieldDeckPool($battle['_id']->__toString(), $uid);
-            $ret_msg = $redis_deck_pool->init($rest_card_ids);
+            $ret_msg = $redis_deck_pool->initiate($rest_card_ids);
 
             if ($ret_msg['ok']) {
                 $handing_card_ids = array_merge($remaining_cards, $redraw_cards, $coin_cards);
                 $redis_handing_pool = new ReBattleFieldHandingPool($battle['_id']->__toString(), $uid);
-                $ret_msg = $redis_handing_pool->init($handing_card_ids);
+                $ret_msg = $redis_handing_pool->initiate($handing_card_ids);
             }
         } else {
             $ret_msg = ['ok' => false, 'msg' => '无战场数据'];
